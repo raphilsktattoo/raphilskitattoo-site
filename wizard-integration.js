@@ -130,7 +130,7 @@
     if (!grid || grid.dataset.wizardStatusAdded) return;
     grid.dataset.wizardStatusAdded = "1";
     statusEl = document.createElement("p");
-    statusEl.style.cssText = "grid-column:1/-1;font-size:12px;color:#7d7979;margin:8px 0 0;font-family:Archivo,sans-serif;";
+    statusEl.style.cssText = "grid-column:1/-1;font-size:12px;color:#ff563c;margin:8px 0 0;font-family:Archivo,sans-serif;font-weight:600;";
     grid.appendChild(statusEl);
     renderStatus();
   }
@@ -147,17 +147,12 @@
     if (remaining <= 0) return;
     const picked = Array.from(fileList).slice(0, remaining);
     for (const file of picked) state.files.push({ file, key: null });
-    // Also click the existing (harmless) dropzone once per added file so
-    // its own pre-existing checkmark UI advances in step, matching real
-    // upload count — zero changes to that UI's own code, just driving it
-    // with the same click it already knows how to handle. That click
-    // toggles (fills the next empty slot, or empties the last-filled one
-    // if you click IT specifically) — always click a currently-EMPTY
-    // slot ("+"/"ARRASTE OU CLIQUE") so it only ever fills forward.
-    for (let i = 0; i < picked.length; i++) {
-      const empty = findDropzones().find((z) => /ARRASTE OU CLIQUE/.test(z.textContent));
-      if (empty) empty.click();
-    }
+    // Deliberately NOT driving the pre-existing checkmark UI here: its
+    // own click handler toggles asynchronously (React state), so firing
+    // it N times synchronously for N files reads its own stale
+    // pre-render state and can under-count. The status line below is
+    // the honest, always-correct account of what's actually attached;
+    // that fake counter was never wired to anything real to begin with.
     ensureStatusLine();
     renderStatus();
   }
