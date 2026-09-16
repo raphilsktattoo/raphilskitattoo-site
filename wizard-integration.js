@@ -32,6 +32,50 @@
     files: [], // { file: File, key: string|null }
   };
 
+  // ---- Input masks (WhatsApp / data de nascimento) ----
+  // React re-renders the input from its own state on every keystroke, so
+  // mutating el.value here (capture phase, before that state update reads
+  // it) is what makes the masked value "stick" — same technique the rest
+  // of this file already uses to layer real behavior onto the existing
+  // React tree without touching its own code.
+
+  function formatPhone(raw) {
+    let digits = raw.replace(/\D/g, "");
+    if (digits.startsWith("55")) digits = digits.slice(2);
+    digits = digits.slice(0, 11);
+    const ddd = digits.slice(0, 2);
+    const rest = digits.slice(2);
+    let out = "+55";
+    if (ddd) out += ` ${ddd}`;
+    if (rest.length > 4) out += ` ${rest.slice(0, rest.length - 4)}-${rest.slice(-4)}`;
+    else if (rest) out += ` ${rest}`;
+    return out;
+  }
+
+  function formatBirthDate(raw) {
+    const digits = raw.replace(/\D/g, "").slice(0, 8);
+    let out = digits.slice(0, 2);
+    if (digits.length > 2) out += `/${digits.slice(2, 4)}`;
+    if (digits.length > 4) out += `/${digits.slice(4, 8)}`;
+    return out;
+  }
+
+  document.addEventListener(
+    "input",
+    (e) => {
+      const el = e.target;
+      if (!(el instanceof HTMLInputElement)) return;
+      if (el.placeholder === "+55 11 90000-0000") {
+        const formatted = formatPhone(el.value);
+        if (formatted !== el.value) el.value = formatted;
+      } else if (el.placeholder === "DD/MM/AAAA") {
+        const formatted = formatBirthDate(el.value);
+        if (formatted !== el.value) el.value = formatted;
+      }
+    },
+    true
+  );
+
   function leaves(root) {
     return [...root.querySelectorAll("*")].filter((el) => el.children.length === 0 && el.textContent.trim());
   }
@@ -327,6 +371,29 @@
       console.error("[wizard] submission failed", err);
       submitted = false;
       showFeedback(false, "Sem conexão no momento. Tente novamente em instantes ou chame no WhatsApp.");
+    }
+  }
+
+  // ---- Auto-open from /orcamento (Instagram bio / ad landing link) ----
+  // /orcamento/index.html redirects here with ?open=agendar; GitHub Pages
+  // has no server-side routing, so that redirect page is what makes the
+  // path exist at all — this just finishes the job once the real app has
+  // mounted.
+  if (new URLSearchParams(location.search).get("open") === "agendar") {
+    const tryOpen = () => {
+      const btn = [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "Agendar sessão");
+      if (btn) {
+        btn.click();
+        return true;
+      }
+      return false;
+    };
+    if (!tryOpen()) {
+      const observer = new MutationObserver(() => {
+        if (tryOpen()) observer.disconnect();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      setTimeout(() => observer.disconnect(), 10000);
     }
   }
 })();
