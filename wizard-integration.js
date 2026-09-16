@@ -143,9 +143,14 @@
     // Also click the existing (harmless) dropzone once per added file so
     // its own pre-existing checkmark UI advances in step, matching real
     // upload count — zero changes to that UI's own code, just driving it
-    // with the same click it already knows how to handle.
-    const zones = findDropzones();
-    for (let i = 0; i < picked.length && zones.length > 0; i++) zones[0].click();
+    // with the same click it already knows how to handle. That click
+    // toggles (fills the next empty slot, or empties the last-filled one
+    // if you click IT specifically) — always click a currently-EMPTY
+    // slot ("+"/"ARRASTE OU CLIQUE") so it only ever fills forward.
+    for (let i = 0; i < picked.length; i++) {
+      const empty = findDropzones().find((z) => /ARRASTE OU CLIQUE/.test(z.textContent));
+      if (empty) empty.click();
+    }
     ensureStatusLine();
     renderStatus();
   }
