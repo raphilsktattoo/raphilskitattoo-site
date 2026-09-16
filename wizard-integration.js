@@ -111,9 +111,16 @@
   let statusEl = null;
 
   function findDropzones() {
-    return [...document.querySelectorAll("div")].filter(
-      (el) => /ARRASTE OU CLIQUE|^REFERÊNCIA \d/.test(el.textContent.trim()) && el.querySelectorAll("*").length < 6
-    );
+    // Every ancestor up to the page header also textContent-matches (it's
+    // a substring of their much larger aggregate text), so bound by text
+    // LENGTH first, then keep only the outermost among what's left — that
+    // discards the small inner icon/label div nested one level inside
+    // each real box, without ever pulling in page-level ancestors.
+    const shortMatches = [...document.querySelectorAll("div")].filter((el) => {
+      const t = el.textContent.trim();
+      return t.length <= 100 && /ARRASTE OU CLIQUE|^REFERÊNCIA \d/.test(t);
+    });
+    return shortMatches.filter((el) => !shortMatches.some((other) => other !== el && other.contains(el)));
   }
 
   function ensureStatusLine() {
