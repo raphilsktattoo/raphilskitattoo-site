@@ -85,12 +85,24 @@
     return [...document.querySelectorAll("*")].find((el) => el.children.length === 0 && el.textContent.trim().toUpperCase() === target);
   }
 
+  // The accent background sits on the text's direct parent for one-line
+  // chips, but one wrapper further up for the two-line chips (label +
+  // hint: tamanho aproximado, orçamento previsto) — checking only the
+  // direct parent silently dropped those two answers from every lead.
+  function isSelectedChip(leaf, container) {
+    for (let el = leaf.parentElement; el && el !== container; el = el.parentElement) {
+      if (getComputedStyle(el).backgroundColor === ACCENT_BG) return true;
+    }
+    return false;
+  }
+
   function singleChip(headerText) {
     const header = findHeader(headerText);
     if (!header) return "";
-    for (const leaf of leaves(header.parentElement)) {
+    const container = header.parentElement;
+    for (const leaf of leaves(container)) {
       if (leaf === header) continue;
-      if (getComputedStyle(leaf.parentElement).backgroundColor === ACCENT_BG) return leaf.textContent.trim();
+      if (isSelectedChip(leaf, container)) return leaf.textContent.trim();
     }
     return "";
   }
@@ -98,8 +110,9 @@
   function multiChips(headerText) {
     const header = findHeader(headerText);
     if (!header) return [];
-    return leaves(header.parentElement)
-      .filter((leaf) => leaf !== header && getComputedStyle(leaf.parentElement).backgroundColor === ACCENT_BG)
+    const container = header.parentElement;
+    return leaves(container)
+      .filter((leaf) => leaf !== header && isSelectedChip(leaf, container))
       .map((leaf) => leaf.textContent.trim());
   }
 
@@ -380,20 +393,20 @@
   // path exist at all — this just finishes the job once the real app has
   // mounted.
   if (new URLSearchParams(location.search).get("open") === "agendar") {
-    const tryOpen = () => {
-      const btn = [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "Agendar sessão");
-      if (btn) {
-        btn.click();
-        return true;
+    // The "Agendar sessão" button is in the DOM slightly before React has
+    // attached its click handler, so a single click the instant it appears
+    // can be silently lost (reproduced on a desktop-width load: the link
+    // landed on the home page with the wizard closed). Keep trying until
+    // the wizard's own first screen is actually on the page.
+    const wizardOpen = () => document.body.innerText.includes("PASSO 1 DE 6");
+    let attempts = 0;
+    const timer = setInterval(() => {
+      if (wizardOpen() || ++attempts > 50) {
+        clearInterval(timer);
+        return;
       }
-      return false;
-    };
-    if (!tryOpen()) {
-      const observer = new MutationObserver(() => {
-        if (tryOpen()) observer.disconnect();
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-      setTimeout(() => observer.disconnect(), 10000);
-    }
+      const btn = [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "Agendar sessão");
+      if (btn) btn.click();
+    }, 300);
   }
 })();
