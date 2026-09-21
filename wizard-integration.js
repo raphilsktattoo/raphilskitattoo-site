@@ -20,6 +20,8 @@
   const API_BASE = "https://app.artgang.com.br";
   const ACCENT_BG = "rgb(255, 86, 60)";
   const MAX_REF_FILES = 4;
+  const UTM_KEY = "rk_utm";
+  const REF_KEY = "rk_ref";
 
   const state = {
     formToken: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
@@ -364,11 +366,7 @@
           availability: availabilityParts.join(" · ") || undefined,
           additionalNotes: notesLines.join("\n") || undefined,
         },
-        attribution: {
-          howHeard: state.source || undefined,
-          landingPage: location.href,
-          referrer: document.referrer || undefined,
-        },
+        attribution: attributionPayload(),
         uploadedFiles,
       };
 
@@ -395,6 +393,85 @@
       showFeedback(false, "Sem conexão no momento. Tente novamente em instantes ou chame no WhatsApp.");
     }
   }
+
+  // ---- Attribution: campaign (UTM) + the real referrer ----
+  // Ad links carry utm_* (set in the ad's URL parameters) and fbclid. The
+  // server already has a column for every utm_* field, but only the raw URL
+  // and document.referrer were being sent — and document.referrer is always
+  // the /orcamento redirect page (never Instagram/Facebook), because that
+  // page is what forwards to the site. /orcamento now stashes the true
+  // referrer in sessionStorage.
+
+  const UTM_FIELDS = {
+    utm_source: "utmSource",
+    utm_medium: "utmMedium",
+    utm_campaign: "utmCampaign",
+    utm_content: "utmContent",
+    utm_term: "utmTerm",
+  };
+
+  function readUtms() {
+    const params = new URLSearchParams(location.search);
+    const found = {};
+    for (const [param, field] of Object.entries(UTM_FIELDS)) {
+      const value = params.get(param);
+      if (value) found[field] = value.slice(0, 200);
+    }
+    return found;
+  }
+
+  try {
+    if (!sessionStorage.getItem(UTM_KEY)) {
+      const utms = readUtms();
+      if (Object.keys(utms).length) sessionStorage.setItem(UTM_KEY, JSON.stringify(utms));
+    }
+  } catch (e) {}
+
+  function attributionPayload() {
+    let utms = readUtms();
+    if (!Object.keys(utms).length) {
+      try {
+        utms = JSON.parse(sessionStorage.getItem(UTM_KEY) || "{}");
+      } catch (e) {
+        utms = {};
+      }
+    }
+    let referrer = "";
+    try {
+      referrer = sessionStorage.getItem(REF_KEY) || "";
+    } catch (e) {}
+    return {
+      ...utms,
+      howHeard: state.source || undefined,
+      landingPage: location.href.slice(0, 1000),
+      referrer: (referrer || document.referrer || "").slice(0, 500) || undefined,
+    };
+  }
+
+  // ---- Link to the privacy policy where the data is collected ----
+  // The wizard is re-rendered by React on every step, so the link has to be
+  // re-added whenever the "Seus dados são usados só para o atendimento" note
+  // shows up again.
+
+  function ensurePrivacyLink() {
+    const matches = [...document.querySelectorAll("div,p,span")].filter((el) => /Seus dados são usados/.test(el.textContent));
+    const note = matches.find((el) => ![...el.children].some((c) => /Seus dados são usados/.test(c.textContent)));
+    if (!note || note.dataset.rkPrivacy) return;
+    note.dataset.rkPrivacy = "1";
+    const a = document.createElement("a");
+    a.href = "/privacidade/";
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = " Política de Privacidade.";
+    a.style.cssText = "color:#ff563c;text-decoration:underline;";
+    note.appendChild(a);
+  }
+
+  let privacyTimer = null;
+  new MutationObserver(() => {
+    clearTimeout(privacyTimer);
+    privacyTimer = setTimeout(ensurePrivacyLink, 300);
+  }).observe(document.body, { childList: true, subtree: true });
 
   // ---- Auto-open from /orcamento (Instagram bio / ad landing link) ----
   // /orcamento/index.html redirects here with ?open=agendar; GitHub Pages
