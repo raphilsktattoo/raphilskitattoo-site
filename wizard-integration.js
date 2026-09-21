@@ -60,6 +60,15 @@
     return out;
   }
 
+  // Assign through the prototype's own setter, never `el.value = …`: React
+  // wraps each input's value property to remember the last value it saw, so
+  // assigning through it makes React believe nothing changed, skip onChange
+  // and keep its state empty — and the masked field then blanked itself on
+  // the next re-render (typing in E-mail wiped WhatsApp, typing in Cidade
+  // wiped the birth date). The prototype setter leaves React's memory stale,
+  // so it sees the masked text as a real change and stores it.
+  const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+
   document.addEventListener(
     "input",
     (e) => {
@@ -67,10 +76,10 @@
       if (!(el instanceof HTMLInputElement)) return;
       if (el.placeholder === "+55 11 90000-0000") {
         const formatted = formatPhone(el.value);
-        if (formatted !== el.value) el.value = formatted;
+        if (formatted !== el.value) setInputValue.call(el, formatted);
       } else if (el.placeholder === "DD/MM/AAAA") {
         const formatted = formatBirthDate(el.value);
-        if (formatted !== el.value) el.value = formatted;
+        if (formatted !== el.value) setInputValue.call(el, formatted);
       }
     },
     true
