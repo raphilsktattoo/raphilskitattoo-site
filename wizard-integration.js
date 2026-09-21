@@ -401,7 +401,7 @@
     const wizardOpen = () => document.body.innerText.includes("PASSO 1 DE 6");
     let attempts = 0;
     const timer = setInterval(() => {
-      if (wizardOpen() || ++attempts > 50) {
+      if (wizardOpen() || ++attempts > 200) {
         clearInterval(timer);
         return;
       }
