@@ -69,20 +69,39 @@
   .cta a:hover { background: #ff9783; }
 
   /* Lightbox */
-  .lb { position: fixed; inset: 0; background: rgba(10,9,9,.96); z-index: 100; display: none; }
-  .lb.open { display: flex; flex-direction: column; }
+  .lb { position: fixed; inset: 0; background: #131211; z-index: 100; display: none; overflow-y: auto; }
+  .lb.open { display: block; }
   .lb-top { display: flex; justify-content: space-between; align-items: center; padding: 16px clamp(16px,2.6vw,48px); border-bottom: 2px solid rgba(243,242,242,.18); }
   .lb-close { appearance: none; background: transparent; border: 2px solid rgba(243,242,242,.4); color: #f3f2f2; width: 40px; height: 40px; cursor: pointer; font-size: 18px; line-height: 1; }
   .lb-close:hover { border-color: #ff563c; color: #ff563c; }
-  .lb-body { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 16px; }
-  .lb-body img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+  .lb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px,1fr)); }
+  .lb-photo { position: relative; min-height: 80vh; background-size: contain; background-position: center; background-repeat: no-repeat; }
   .lb-arrow {
-    position: absolute; top: 0; bottom: 0; width: 80px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font: 300 40px/1 Archivo, sans-serif; color: rgba(243,242,242,.65); background: transparent;
+    position: absolute; top: 0; bottom: 0; width: 64px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font: 300 34px/1 Archivo, sans-serif; color: rgba(243,242,242,.65); background: transparent; border: 0;
   }
   .lb-arrow:hover { color: #ff563c; }
   .lb-arrow.prev { left: 0; background: linear-gradient(to right, rgba(19,18,17,.4), transparent); }
   .lb-arrow.next { right: 0; background: linear-gradient(to left, rgba(19,18,17,.4), transparent); }
+
+  .lb-panel { padding: clamp(40px,6vw,72px) clamp(20px,4vw,56px); display: flex; flex-direction: column; gap: 24px; border-left: 2px solid rgba(243,242,242,.18); }
+  .lb-estilo-row { display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 2px solid rgba(243,242,242,.18); }
+  .lb-estilo-row span:first-child { font: 600 10.5px/1 Archivo, sans-serif; letter-spacing: .18em; color: #7d7979; }
+  .lb-estilo-row span:last-child { font: 500 14px/1 Archivo, sans-serif; }
+  .lb-cta {
+    appearance: none; border: 0; background: #ff563c; color: #131211; text-decoration: none;
+    padding: 22px 26px; display: flex; justify-content: space-between; align-items: center; gap: 20px;
+    font: 800 14px/1 Archivo, sans-serif; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+  }
+  .lb-cta:hover { background: #ff9783; }
+  .lb-navrow { display: flex; gap: 2px; }
+  .lb-navrow button {
+    flex: 1; appearance: none; background: transparent; border: 2px solid rgba(243,242,242,.4); color: #f3f2f2;
+    padding: 17px 20px; font: 600 10.5px/1 Archivo, sans-serif; letter-spacing: .16em; cursor: pointer;
+  }
+  .lb-navrow button:hover { border-color: #ff563c; }
+  .lb-navrow button.next { text-align: right; }
 </style>
 </head>
 <body>
@@ -109,13 +128,25 @@
 
 <div class="lb" id="lb">
   <div class="lb-top">
-    <div></div>
+    <div style="font:600 11px/1 Archivo,sans-serif;letter-spacing:.16em;color:#7d7979">FECHAR E VOLTAR AO PORTFÓLIO</div>
     <button class="lb-close" id="lbClose">✕</button>
   </div>
-  <div class="lb-body">
-    <div class="lb-arrow prev" id="lbPrev">‹</div>
-    <img id="lbImg" src="" alt="">
-    <div class="lb-arrow next" id="lbNext">›</div>
+  <div class="lb-grid">
+    <div class="lb-photo" id="lbPhoto">
+      <button class="lb-arrow prev" id="lbPrev">‹</button>
+      <button class="lb-arrow next" id="lbNext">›</button>
+    </div>
+    <div class="lb-panel">
+      <div class="lb-estilo-row">
+        <span>ESTILO</span>
+        <span id="lbEstilo"></span>
+      </div>
+      <a class="lb-cta" href="/#topo">Quero algo neste estilo <span>→</span></a>
+      <div class="lb-navrow">
+        <button id="lbPrev2">← Anterior</button>
+        <button id="lbNext2" class="next">Próxima →</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -129,7 +160,9 @@
   var filtersEl = document.getElementById('filters');
   var gridEl = document.getElementById('grid');
   var lb = document.getElementById('lb');
-  var lbImg = document.getElementById('lbImg');
+  var lbPhoto = document.getElementById('lbPhoto');
+  var lbEstilo = document.getElementById('lbEstilo');
+  var ESTILO_LABEL = { COR: 'Colorido', REALISMO: 'Realismo', 'PRETO E CINZA': 'Preto e cinza' };
 
   function visibleWorks() {
     return WORKS.filter(function (w) { return filter === 'TUDO' || w.tag === filter; });
@@ -178,7 +211,9 @@
     lb.classList.remove('open');
   }
   function showCurrent() {
-    lbImg.src = WORKS[current].img;
+    var w = WORKS[current];
+    lbPhoto.style.backgroundImage = "url('" + w.img + "')";
+    lbEstilo.textContent = ESTILO_LABEL[w.tag] || w.tag;
   }
   function goPrev() { current = (current - 1 + WORKS.length) % WORKS.length; showCurrent(); }
   function goNext() { current = (current + 1) % WORKS.length; showCurrent(); }
@@ -186,7 +221,8 @@
   document.getElementById('lbClose').addEventListener('click', closeLightbox);
   document.getElementById('lbPrev').addEventListener('click', goPrev);
   document.getElementById('lbNext').addEventListener('click', goNext);
-  lb.addEventListener('click', function (e) { if (e.target === lb) closeLightbox(); });
+  document.getElementById('lbPrev2').addEventListener('click', goPrev);
+  document.getElementById('lbNext2').addEventListener('click', goNext);
   document.addEventListener('keydown', function (e) {
     if (!lb.classList.contains('open')) return;
     if (e.key === 'Escape') closeLightbox();
