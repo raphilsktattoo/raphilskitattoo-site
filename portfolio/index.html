@@ -24,19 +24,30 @@
     background: rgba(19,18,17,.93);
     backdrop-filter: blur(14px);
     border-bottom: 2px solid rgba(243,242,242,.18);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px clamp(16px,2.6vw,48px);
+    min-height: 78px;
+    display: flex; align-items: center; flex-wrap: wrap; row-gap: 10px;
+    padding: 12px clamp(16px,2.6vw,48px); gap: clamp(14px,2.2vw,44px);
   }
-  header a.logo { font-weight: 800; font-size: 18px; text-decoration: none; letter-spacing: -.02em; }
-  header a.back {
-    font: 600 11px/1 Archivo, sans-serif; letter-spacing: .16em; text-transform: uppercase;
-    color: #bab6b6; text-decoration: none; display: flex; align-items: center; gap: 8px;
+  header a.logo { font: 800 20px/1 Archivo, sans-serif; letter-spacing: -.02em; color: #f3f2f2; text-decoration: none; flex: none; }
+  nav.menu { flex: 1 1 auto; min-width: 0; display: flex; gap: clamp(12px,1.9vw,30px); flex-wrap: wrap; row-gap: 8px; }
+  nav.menu a {
+    font: 600 clamp(10px,.95vw,13px)/1 Archivo, sans-serif; letter-spacing: .16em; text-transform: uppercase;
+    color: #bab6b6; text-decoration: none; white-space: nowrap;
   }
-  header a.back:hover { color: #ff563c; }
+  nav.menu a:hover, nav.menu a.active { color: #ff563c; }
+  header .locale {
+    flex: none; font: 600 clamp(10px,.95vw,13px)/1 Archivo, sans-serif; letter-spacing: .16em;
+    text-transform: uppercase; color: #7d7979; white-space: nowrap;
+  }
+  header .book-btn {
+    appearance: none; flex: none; border: 0; background: #ff563c; color: #131211;
+    padding: 15px clamp(14px,1.7vw,24px); font: 800 clamp(10px,.9vw,12px)/1 Archivo, sans-serif;
+    letter-spacing: .08em; text-transform: uppercase; text-decoration: none; white-space: nowrap; cursor: pointer;
+  }
+  header .book-btn:hover { background: #ff9783; }
 
   .hero { padding: clamp(40px,6vw,64px) clamp(20px,4vw,48px) clamp(24px,3vw,32px); }
-  .eyebrow { font: 600 10px/1 Archivo, sans-serif; letter-spacing: .26em; color: #ff563c; margin-bottom: 14px; }
-  h1 { font: 800 clamp(32px,4.5vw,56px)/.96 Archivo, sans-serif; letter-spacing: -.03em; text-transform: uppercase; margin: 0 0 24px; }
+  h1 { font: 800 clamp(32px,4.5vw,56px)/.96 Archivo, sans-serif; letter-spacing: -.03em; text-transform: uppercase; margin: 0 0 24px; color: #ff563c; }
 
   .filters { display: flex; gap: 2px; flex-wrap: wrap; padding: 0 clamp(20px,4vw,48px) 24px; }
   .filters button {
@@ -106,15 +117,21 @@
 </head>
 <body>
 
-<header>
+<header id="topo">
   <a class="logo" href="/">RAPHILSKI</a>
-  <a class="back" href="/">← Voltar para o site</a>
+  <nav class="menu">
+    <a href="/">Home</a>
+    <a href="/#artista">Artista</a>
+    <a href="/portfolio/" class="active">Portfólio</a>
+    <a href="/#estudio">Estúdio</a>
+  </nav>
+  <div class="locale">Alphaville · Barueri · SP</div>
+  <a class="book-btn" href="/#topo">Agendar sessão</a>
 </header>
 
 <div class="wrap">
   <div class="hero">
-    <div class="eyebrow">PORTFÓLIO</div>
-    <h1>Todos os<br>trabalhos</h1>
+    <h1>Portfólio</h1>
   </div>
 
   <div class="filters" id="filters"></div>
