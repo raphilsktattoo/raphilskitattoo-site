@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portfólio completo — Raphilski Tattoo</title>
+<meta name="description" content="Veja todos os trabalhos de tatuagem do Raphilski — realismo, preto e cinza e cor.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #131211;
+    color: #f3f2f2;
+    font-family: Archivo, system-ui, sans-serif;
+  }
+  a { color: inherit; }
+  .wrap { width: 100%; max-width: 1600px; margin: 0 auto; }
+
+  header {
+    position: sticky; top: 0; z-index: 60;
+    background: rgba(19,18,17,.93);
+    backdrop-filter: blur(14px);
+    border-bottom: 2px solid rgba(243,242,242,.18);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px clamp(16px,2.6vw,48px);
+  }
+  header a.logo { font-weight: 800; font-size: 18px; text-decoration: none; letter-spacing: -.02em; }
+  header a.back {
+    font: 600 11px/1 Archivo, sans-serif; letter-spacing: .16em; text-transform: uppercase;
+    color: #bab6b6; text-decoration: none; display: flex; align-items: center; gap: 8px;
+  }
+  header a.back:hover { color: #ff563c; }
+
+  .hero { padding: clamp(40px,6vw,64px) clamp(20px,4vw,48px) clamp(24px,3vw,32px); }
+  .eyebrow { font: 600 10px/1 Archivo, sans-serif; letter-spacing: .26em; color: #ff563c; margin-bottom: 14px; }
+  h1 { font: 800 clamp(32px,4.5vw,56px)/.96 Archivo, sans-serif; letter-spacing: -.03em; text-transform: uppercase; margin: 0 0 24px; }
+
+  .filters { display: flex; gap: 2px; flex-wrap: wrap; padding: 0 clamp(20px,4vw,48px) 24px; }
+  .filters button {
+    appearance: none; cursor: pointer; padding: 13px 18px;
+    border: 2px solid rgba(243,242,242,.22); background: transparent; color: #d7d3d3;
+    font: 600 10.5px/1 Archivo, sans-serif; letter-spacing: .14em; text-transform: uppercase;
+  }
+  .filters button.active { border-color: #ff563c; background: #ff563c; color: #131211; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 2px;
+    padding: 2px clamp(20px,4vw,48px) clamp(60px,8vw,96px);
+  }
+  .card { position: relative; cursor: pointer; overflow: hidden; background: #1c1a19; }
+  .card img { width: 100%; height: 420px; object-fit: cover; display: block; transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+  .card:hover img { transform: scale(1.05); }
+  .card.hidden { display: none; }
+
+  .cta {
+    display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between;
+    background: #1c1a19; margin: 0 clamp(20px,4vw,48px) clamp(60px,8vw,96px);
+    padding: clamp(28px,4vw,40px); border: 2px solid rgba(243,242,242,.14);
+  }
+  .cta p { margin: 0; font: 600 16px/1.3 Archivo, sans-serif; }
+  .cta a {
+    flex: none; display: inline-flex; align-items: center; gap: 12px;
+    background: #ff563c; color: #131211; text-decoration: none;
+    padding: 18px 26px; font: 800 13px/1 Archivo, sans-serif; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .cta a:hover { background: #ff9783; }
+
+  /* Lightbox */
+  .lb { position: fixed; inset: 0; background: rgba(10,9,9,.96); z-index: 100; display: none; }
+  .lb.open { display: flex; flex-direction: column; }
+  .lb-top { display: flex; justify-content: space-between; align-items: center; padding: 16px clamp(16px,2.6vw,48px); border-bottom: 2px solid rgba(243,242,242,.18); }
+  .lb-close { appearance: none; background: transparent; border: 2px solid rgba(243,242,242,.4); color: #f3f2f2; width: 40px; height: 40px; cursor: pointer; font-size: 18px; line-height: 1; }
+  .lb-close:hover { border-color: #ff563c; color: #ff563c; }
+  .lb-body { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 16px; }
+  .lb-body img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .lb-arrow {
+    position: absolute; top: 0; bottom: 0; width: 80px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font: 300 40px/1 Archivo, sans-serif; color: rgba(243,242,242,.65); background: transparent;
+  }
+  .lb-arrow:hover { color: #ff563c; }
+  .lb-arrow.prev { left: 0; background: linear-gradient(to right, rgba(19,18,17,.4), transparent); }
+  .lb-arrow.next { right: 0; background: linear-gradient(to left, rgba(19,18,17,.4), transparent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">RAPHILSKI</a>
+  <a class="back" href="/">← Voltar para o site</a>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">PORTFÓLIO</div>
+    <h1>Todos os<br>trabalhos</h1>
+  </div>
+
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="cta">
+    <p>Gostou de algum estilo? Vamos conversar sobre o seu projeto.</p>
+    <a href="/#topo">Agendar minha sessão <span>→</span></a>
+  </div>
+</div>
+
+<div class="lb" id="lb">
+  <div class="lb-top">
+    <div></div>
+    <button class="lb-close" id="lbClose">✕</button>
+  </div>
+  <div class="lb-body">
+    <div class="lb-arrow prev" id="lbPrev">‹</div>
+    <img id="lbImg" src="" alt="">
+    <div class="lb-arrow next" id="lbNext">›</div>
+  </div>
+</div>
+
+<script src="/portfolio-data.js"></script>
+<script>
+(function () {
+  var filter = 'TUDO';
+  var current = 0; // index within WORKS of the open lightbox photo
+  var FILTERS = ['TUDO', 'REALISMO', 'PRETO E CINZA', 'COR'];
+
+  var filtersEl = document.getElementById('filters');
+  var gridEl = document.getElementById('grid');
+  var lb = document.getElementById('lb');
+  var lbImg = document.getElementById('lbImg');
+
+  function visibleWorks() {
+    return WORKS.filter(function (w) { return filter === 'TUDO' || w.tag === filter; });
+  }
+
+  function renderFilters() {
+    filtersEl.innerHTML = '';
+    FILTERS.forEach(function (f) {
+      var b = document.createElement('button');
+      b.textContent = f;
+      if (f === filter) b.className = 'active';
+      b.addEventListener('click', function () {
+        filter = f;
+        renderFilters();
+        renderGrid();
+      });
+      filtersEl.appendChild(b);
+    });
+  }
+
+  function renderGrid() {
+    gridEl.innerHTML = '';
+    var vis = visibleWorks();
+    vis.forEach(function (w) {
+      var card = document.createElement('div');
+      card.className = 'card';
+      var img = document.createElement('img');
+      img.src = w.img;
+      img.loading = 'lazy';
+      img.alt = '';
+      img.style.objectPosition = w.pos;
+      card.appendChild(img);
+      card.addEventListener('click', function () {
+        openLightbox(WORKS.indexOf(w));
+      });
+      gridEl.appendChild(card);
+    });
+  }
+
+  function openLightbox(idx) {
+    current = idx;
+    showCurrent();
+    lb.classList.add('open');
+  }
+  function closeLightbox() {
+    lb.classList.remove('open');
+  }
+  function showCurrent() {
+    lbImg.src = WORKS[current].img;
+  }
+  function goPrev() { current = (current - 1 + WORKS.length) % WORKS.length; showCurrent(); }
+  function goNext() { current = (current + 1) % WORKS.length; showCurrent(); }
+
+  document.getElementById('lbClose').addEventListener('click', closeLightbox);
+  document.getElementById('lbPrev').addEventListener('click', goPrev);
+  document.getElementById('lbNext').addEventListener('click', goNext);
+  lb.addEventListener('click', function (e) { if (e.target === lb) closeLightbox(); });
+  document.addEventListener('keydown', function (e) {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') goPrev();
+    else if (e.key === 'ArrowRight') goNext();
+  });
+
+  renderFilters();
+  renderGrid();
+})();
+</script>
+
+</body>
+</html>
